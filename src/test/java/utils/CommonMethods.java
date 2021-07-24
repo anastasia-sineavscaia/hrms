@@ -1,11 +1,14 @@
 package utils;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +25,15 @@ public class CommonMethods {
             case "chrome":
                 //System.setProperty("webdriver.chrome.driver", "src/drivers/chromedriver.exe");
                 WebDriverManager.chromedriver().setup();
-                driver = new ChromeDriver();
+                if(ConfigReader.getPropertyValue("headless").equals("true")){
+                    ChromeOptions chromeOptions=new ChromeOptions();
+                    chromeOptions.setHeadless(true);
+                    driver = new ChromeDriver(chromeOptions);
+                }else {
+                    driver = new ChromeDriver();
+                }
+
+
                 break;
             case "firefox":
                 //  System.setProperty("webdriver.gecko.driver", "src/drivers/geckodriver.exe");
@@ -70,10 +81,9 @@ public class CommonMethods {
     public static byte[] takeScreenshot(String fileName) {
         TakesScreenshot ts = (TakesScreenshot) driver;
 
-        byte[]picBytes=ts.getScreenshotAs(OutputType.BYTES);
+        byte[] picBytes = ts.getScreenshotAs(OutputType.BYTES);
 
         File sourceFile = ts.getScreenshotAs(OutputType.FILE);
-
         try {
             FileUtils.copyFile(sourceFile, new File( Constants.SCREENSHOT_FILEPATH + fileName + " " + getTimeStamp("yyyy-MM-dd-HH-mm-ss") + ".png"));
         } catch (IOException e) {
@@ -87,6 +97,7 @@ public class CommonMethods {
         SimpleDateFormat sdf = new SimpleDateFormat(pattern);
         return sdf.format(date);
     }
+
     public static void tearDown(){
         if(driver!=null){
             driver.quit();
